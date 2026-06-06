@@ -2,7 +2,8 @@ class UsageCounter < ApplicationRecord
   # Per-tier daily AI limits for the V0 prototype (no auth/tiers yet — one free tier).
   DAILY_LIMITS = {
     "writing_correction" => 20,
-    "explanation" => 60
+    "explanation" => 60,
+    "exercise_answer" => 40
   }.freeze
 
   validates :device_id, :day, :kind, presence: true

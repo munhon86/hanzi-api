@@ -8,4 +8,5 @@ Rails.application.routes.draw do
   # V0 AI endpoints (no auth; rate-limited per device id).
   post "writing/corrections", to: "writing/corrections#create"
   post "explanations", to: "explanations#create"
+  post "exercise_answers", to: "exercises/answers#create"
 end
