@@ -45,6 +45,10 @@ module Exercises
           "sample_answers": ["a natural correct answer"]
         }
         weak_items are individual Chinese characters or words the learner got wrong and should review.
+        If acceptable is false, DO NOT reveal the correct Chinese answer, a full corrected sentence,
+        or sample answers. Give a hint instead, preferably in English (for example the English
+        meaning of the missing word, the target meaning, or what to look at in the picture).
+        In that case, set issues to [] and sample_answers to [].
 
         Scoring rubric (be encouraging — this is an absolute beginner):
         - Start from 100 and deduct only for real mistakes.

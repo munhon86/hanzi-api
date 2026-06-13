@@ -9,4 +9,8 @@ Rails.application.routes.draw do
   post "writing/corrections", to: "writing/corrections#create"
   post "explanations", to: "explanations#create"
   post "exercise_answers", to: "exercises/answers#create"
+  post "pronunciation_checks", to: "pronunciation_checks#create"
+  resources :exercise_progresses, only: [ :index, :create ] do
+    post :resume, on: :collection
+  end
 end

@@ -1,5 +1,6 @@
 class ApplicationController < ActionController::API
   rescue_from ClaudeClient::Error, with: :render_ai_error
+  rescue_from OpenaiAudioClient::Error, with: :render_ai_error
 
   private
 
@@ -24,5 +25,17 @@ class ApplicationController < ActionController::API
 
   def render_ai_error(error)
     render json: { error: "AI service error: #{error.message}" }, status: :bad_gateway
+  end
+
+  def current_user
+    @current_user ||= begin
+      User.find_by(id: request.headers["X-User-Id"].presence) ||
+        User.find_by(device_id: device_id) ||
+        User.find_or_create_by!(email: "test@hanzi.local") do |user|
+          user.name = "Hanzi Test User"
+          user.device_id = "test-device"
+          user.current_difficulty = "beginner"
+        end
+    end
   end
 end

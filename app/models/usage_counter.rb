@@ -3,7 +3,8 @@ class UsageCounter < ApplicationRecord
   DAILY_LIMITS = {
     "writing_correction" => 20,
     "explanation" => 60,
-    "exercise_answer" => 40
+    "exercise_answer" => 40,
+    "pronunciation_check" => 40
   }.freeze
 
   validates :device_id, :day, :kind, presence: true

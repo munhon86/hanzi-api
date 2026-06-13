@@ -7,3 +7,9 @@
 #   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
+
+User.find_or_create_by!(email: "test@hanzi.local") do |user|
+  user.name = "Hanzi Test User"
+  user.device_id = "test-device"
+  user.current_difficulty = "beginner"
+end
