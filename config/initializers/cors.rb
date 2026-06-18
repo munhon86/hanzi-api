@@ -5,12 +5,16 @@
 
 # Read more: https://github.com/cyu/rack-cors
 
-# Rails.application.config.middleware.insert_before 0, Rack::Cors do
-#   allow do
-#     origins "example.com"
-#
-#     resource "*",
-#       headers: :any,
-#       methods: [:get, :post, :put, :patch, :delete, :options, :head]
-#   end
-# end
+# CORS for the Expo **web** build (native iOS/Android fetch is not subject to CORS).
+# Set CORS_ORIGINS to a comma-separated allowlist in production; the defaults cover the
+# local Expo web dev server.
+Rails.application.config.middleware.insert_before 0, Rack::Cors do
+  allow do
+    origins(ENV["CORS_ORIGINS"].presence&.split(",")&.map(&:strip) || %w[http://localhost:8081 http://localhost:19006])
+
+    resource "*",
+      headers: :any,
+      expose: %w[Authorization],
+      methods: [ :get, :post, :put, :patch, :delete, :options, :head ]
+  end
+end

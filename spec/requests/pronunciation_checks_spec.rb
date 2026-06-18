@@ -1,8 +1,9 @@
 require "rails_helper"
 
 RSpec.describe "PronunciationChecks", type: :request do
+  let!(:user) { create(:user) }
   let(:device_id) { "device-pronunciation" }
-  let(:headers) { { "X-Device-Id" => device_id } }
+  let(:headers) { { "X-Device-Id" => device_id, "Authorization" => "Bearer #{AuthToken.encode(user)}" } }
   let(:audio) { fixture_file_upload("sample.m4a", "audio/m4a") }
 
   let(:claude_payload) do

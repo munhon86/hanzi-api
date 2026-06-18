@@ -1,17 +1,20 @@
 require "rails_helper"
 
 RSpec.describe "ExerciseProgresses", type: :request do
-  before { User.destroy_all }
-
-  let!(:user) { User.create!(email: "test@hanzi.local", name: "Hanzi Test User") }
+  let!(:user) { create(:user, email: "test@hanzi.local", name: "Hanzi Test User") }
 
   it "returns one progress row per exercise category" do
-    get "/exercise_progresses", params: { difficulty: "beginner" }
+    get "/exercise_progresses", params: { difficulty: "beginner" }, headers: auth_headers(user)
 
     expect(response).to have_http_status(:ok)
     body = response.parsed_body
     expect(body["user"]["email"]).to eq("test@hanzi.local")
     expect(body["progress"].map { |p| p["exercise_type"] }).to include("reorder_words", "fill_blank")
+  end
+
+  it "requires authentication" do
+    get "/exercise_progresses", params: { difficulty: "beginner" }
+    expect(response).to have_http_status(:unauthorized)
   end
 
   it "records an attempt and advances the category position" do
@@ -24,7 +27,8 @@ RSpec.describe "ExerciseProgresses", type: :request do
            correct: true,
            revealed_answer: false,
            score: 100
-         }
+         },
+         headers: auth_headers(user)
 
     expect(response).to have_http_status(:created)
     body = response.parsed_body
@@ -41,7 +45,8 @@ RSpec.describe "ExerciseProgresses", type: :request do
            exercise_type: "reorder_words",
            exercise_id: "g-ro-2",
            exercise_index: 2
-         }
+         },
+         headers: auth_headers(user)
 
     expect(response).to have_http_status(:ok)
     body = response.parsed_body
@@ -53,49 +58,39 @@ RSpec.describe "ExerciseProgresses", type: :request do
   end
 
   it "keeps progress separate per user and exercise category" do
-    User.create!(email: "other@hanzi.local", name: "Other", device_id: "other-device")
+    other = create(:user, email: "other@hanzi.local", name: "Other")
 
     post "/exercise_progresses",
          params: {
-           difficulty: "beginner",
-           exercise_type: "reorder_words",
-           exercise_id: "g-ro-4",
-           exercise_index: 4,
-           correct: true,
-           revealed_answer: false
-         }
+           difficulty: "beginner", exercise_type: "reorder_words", exercise_id: "g-ro-4",
+           exercise_index: 4, correct: true, revealed_answer: false
+         },
+         headers: auth_headers(user)
 
     post "/exercise_progresses",
          params: {
-           difficulty: "beginner",
-           exercise_type: "fill_blank",
-           exercise_id: "g-fb-1",
-           exercise_index: 1,
-           correct: true,
-           revealed_answer: false
-         }
+           difficulty: "beginner", exercise_type: "fill_blank", exercise_id: "g-fb-1",
+           exercise_index: 1, correct: true, revealed_answer: false
+         },
+         headers: auth_headers(user)
 
     post "/exercise_progresses",
-         headers: { "X-Device-Id" => "other-device" },
          params: {
-           difficulty: "beginner",
-           exercise_type: "reorder_words",
-           exercise_id: "g-ro-0",
-           exercise_index: 0,
-           correct: true,
-           revealed_answer: false
-         }
+           difficulty: "beginner", exercise_type: "reorder_words", exercise_id: "g-ro-0",
+           exercise_index: 0, correct: true, revealed_answer: false
+         },
+         headers: auth_headers(other)
 
-    get "/exercise_progresses", params: { difficulty: "beginner" }
-    test_user_rows = response.parsed_body["progress"].index_by { |row| row["exercise_type"] }
+    get "/exercise_progresses", params: { difficulty: "beginner" }, headers: auth_headers(user)
+    user_rows = response.parsed_body["progress"].index_by { |row| row["exercise_type"] }
 
-    expect(test_user_rows["reorder_words"]["current_index"]).to eq(5)
-    expect(test_user_rows["fill_blank"]["current_index"]).to eq(2)
+    expect(user_rows["reorder_words"]["current_index"]).to eq(5)
+    expect(user_rows["fill_blank"]["current_index"]).to eq(2)
 
-    get "/exercise_progresses", headers: { "X-Device-Id" => "other-device" }, params: { difficulty: "beginner" }
-    other_user_rows = response.parsed_body["progress"].index_by { |row| row["exercise_type"] }
+    get "/exercise_progresses", params: { difficulty: "beginner" }, headers: auth_headers(other)
+    other_rows = response.parsed_body["progress"].index_by { |row| row["exercise_type"] }
 
-    expect(other_user_rows["reorder_words"]["current_index"]).to eq(1)
-    expect(other_user_rows["fill_blank"]["current_index"]).to eq(0)
+    expect(other_rows["reorder_words"]["current_index"]).to eq(1)
+    expect(other_rows["fill_blank"]["current_index"]).to eq(0)
   end
 end

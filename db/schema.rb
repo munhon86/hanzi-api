@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_10_100000) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_16_100002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -57,6 +57,21 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_10_100000) do
     t.index ["user_id"], name: "index_exercise_category_progresses_on_user_id"
   end
 
+  create_table "refresh_tokens", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "token_digest", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "revoked_at"
+    t.datetime "last_used_at"
+    t.bigint "replaced_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["expires_at"], name: "index_refresh_tokens_on_expires_at"
+    t.index ["replaced_by_id"], name: "index_refresh_tokens_on_replaced_by_id"
+    t.index ["token_digest"], name: "index_refresh_tokens_on_token_digest", unique: true
+    t.index ["user_id"], name: "index_refresh_tokens_on_user_id"
+  end
+
   create_table "usage_counters", force: :cascade do |t|
     t.string "device_id", null: false
     t.date "day", null: false
@@ -67,6 +82,18 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_10_100000) do
     t.index ["device_id", "day", "kind"], name: "index_usage_counters_on_device_id_and_day_and_kind", unique: true
   end
 
+  create_table "user_identities", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "provider", null: false
+    t.string "provider_uid", null: false
+    t.string "email"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["provider", "provider_uid"], name: "index_user_identities_on_provider_and_provider_uid", unique: true
+    t.index ["user_id", "provider"], name: "index_user_identities_on_user_id_and_provider", unique: true
+    t.index ["user_id"], name: "index_user_identities_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", null: false
     t.string "name"
@@ -74,10 +101,14 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_10_100000) do
     t.string "current_difficulty", default: "beginner", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "password_digest"
     t.index ["device_id"], name: "index_users_on_device_id"
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
   add_foreign_key "exercise_attempts", "users"
   add_foreign_key "exercise_category_progresses", "users"
+  add_foreign_key "refresh_tokens", "refresh_tokens", column: "replaced_by_id"
+  add_foreign_key "refresh_tokens", "users"
+  add_foreign_key "user_identities", "users"
 end

@@ -5,7 +5,19 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # V0 AI endpoints (no auth; rate-limited per device id).
+  # Authentication. Public endpoints issue the app's own access + refresh tokens.
+  namespace :auth do
+    post   "sign_up",  to: "registrations#create"
+    post   "sign_in",  to: "sessions#create"
+    delete "sign_out", to: "sessions#destroy"
+    post   "refresh",  to: "tokens#refresh"
+    # Phase 2: post "migrate", to: "migrations#create"
+    # Phase 3: post "google", to: "google#create"
+    # Phase 4: post "apple",  to: "apple#create"
+  end
+  get "me", to: "me#show"
+
+  # AI + progress endpoints (now require a Bearer access token; still rate-limited per device id).
   post "writing/corrections", to: "writing/corrections#create"
   post "explanations", to: "explanations#create"
   post "exercise_answers", to: "exercises/answers#create"

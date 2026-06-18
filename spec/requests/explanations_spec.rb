@@ -1,8 +1,11 @@
 require "rails_helper"
 
 RSpec.describe "Explanations", type: :request do
+  let!(:user) { create(:user) }
   let(:device_id) { "device-xyz" }
-  let(:headers) { { "X-Device-Id" => device_id, "CONTENT_TYPE" => "application/json" } }
+  let(:headers) do
+    { "X-Device-Id" => device_id, "CONTENT_TYPE" => "application/json", "Authorization" => "Bearer #{AuthToken.encode(user)}" }
+  end
 
   let(:claude_payload) do
     {

@@ -8,8 +8,10 @@
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
 
-User.find_or_create_by!(email: "test@hanzi.local") do |user|
-  user.name = "Hanzi Test User"
-  user.device_id = "test-device"
-  user.current_difficulty = "beginner"
-end
+# Test account for development / manual sign-in (email + password auth).
+test_user = User.find_or_initialize_by(email: "test@example.com")
+test_user.name = "Test User"
+test_user.current_difficulty = "elementary"
+test_user.password = "password123"
+test_user.save!
+puts "Seeded test account: test@example.com / password123"
